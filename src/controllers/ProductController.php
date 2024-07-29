@@ -93,4 +93,110 @@ class ProductController
         echo json_encode($payload);
     }
 
+    function getAllSizes()
+    {
+        $payload = $this->productService->getAllSizes();
+
+        if (array_key_exists("code", $payload)) {
+            http_response_code($payload["code"]);
+            unset($payload["code"]);
+        }
+
+        echo json_encode($payload);
+    }
+
+    function addSizeToProduct($request)
+    {
+        $productId = $request["productId"];
+        $sizeId = $request["sizeId"];
+        $payload = $this->productService->addSizeToProduct($productId, $sizeId);
+
+        if (array_key_exists("code", $payload)) {
+            http_response_code($payload["code"]);
+            unset($payload["code"]);
+        }
+
+        echo json_encode($payload);
+    }
+
+    function removeSizeFromProduct($request)
+    {
+        $productId = $request["productId"];
+        $sizeId = $request["sizeId"];
+        $payload = $this->productService->removeSizeFromProduct($productId, $sizeId);
+
+        if (array_key_exists("code", $payload)) {
+            http_response_code($payload["code"]);
+            unset($payload["code"]);
+        }
+
+        echo json_encode($payload);
+    }
+
+    function getSizesForProduct($request)
+    {
+        $productId = $request["productId"];
+        $payload = $this->productService->getSizesForProduct($productId);
+
+        if (array_key_exists("code", $payload)) {
+            http_response_code($payload["code"]);
+            unset($payload["code"]);
+        }
+
+        echo json_encode($payload);
+    }
+
+    function getAllCategories()
+    {
+        $payload = $this->productService->getAllCategories();
+
+        if (array_key_exists("code", $payload)) {
+            http_response_code($payload["code"]);
+            unset($payload["code"]);
+        }
+
+        echo json_encode($payload);
+    }
+
+    function addCategoryToProduct($request)
+    {
+        $productId = $request["productId"];
+        $categoryId = $request["categoryId"];
+        $payload = $this->productService->addCategoryToProduct($productId, $categoryId);
+
+        if (array_key_exists("code", $payload)) {
+            http_response_code($payload["code"]);
+            unset($payload["code"]);
+        }
+
+        echo json_encode($payload);
+    }
+
+    function removeCategoryFromProduct($request)
+    {
+        $productId = $request["productId"];
+        $categoryId = $request["categoryId"];
+        $payload = $this->productService->removeCategoryFromProduct($productId, $categoryId);
+
+        if (array_key_exists("code", $payload)) {
+            http_response_code($payload["code"]);
+            unset($payload["code"]);
+        }
+
+        echo json_encode($payload);
+    }
+
+    function getCategoriesForProduct($request)
+    {
+        $productId = $request["productId"];
+        $payload = $this->productService->getCategoriesForProduct($productId);
+
+        if (array_key_exists("code", $payload)) {
+            http_response_code($payload["code"]);
+            unset($payload["code"]);
+        }
+
+        echo json_encode($payload);
+    }
+
 }

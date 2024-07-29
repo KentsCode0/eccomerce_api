@@ -24,12 +24,6 @@ class ProductService
 
     function create($product)
     {
-        $token = $this->tokenService->readEncodedToken();
-
-        if (!$token) {
-            return Response::payload(404, false, "unauthorized access");
-        }
-
         if (!Checker::isFieldExist($product, ["product_name", "product_description", "product_image", "product_price" ])) {
             return Response::payload(
                 400,
@@ -54,11 +48,6 @@ class ProductService
     
     function get($productId)
     {
-        $token = $this->tokenService->readEncodedToken();
-
-        if (!$token) {
-            return Response::payload(404, false, "unauthorized access");
-        }
 
         $product = $this->Product->get($productId);
 
@@ -75,11 +64,6 @@ class ProductService
 
     function getAll()
     {
-        $token = $this->tokenService->readEncodedToken();
-
-        if (!$token) {
-            return Response::payload(404, false, "unauthorized access");
-        }
 
         $filterStr = $this->filter->getFilterStr();
 
@@ -102,11 +86,6 @@ class ProductService
 
     function update($product, $productId)
     {
-        $token = $this->tokenService->readEncodedToken();
-
-        if (!$token) {
-            return Response::payload(404, false, "unauthorized access");
-        }
 
         $product = $this->Product->update($product, $productId);
 
@@ -123,11 +102,6 @@ class ProductService
     }
     function delete($productId)
     {
-        $token = $this->tokenService->readEncodedToken();
-
-        if (!$token) {
-            return Response::payload(404, false, "unauthorized access");
-        }
 
         $product = $this->Product->delete($productId);
 
@@ -144,14 +118,123 @@ class ProductService
 
     function uploadImage($productId, $files)
     {
-        $token = $this->tokenService->readEncodedToken();
-
-        if (!$token) {
-            return Response::payload(404, false, "unauthorized access");
-        }
 
         $this->Product->uploadImage($productId, $files);
         return Response::payload(200, true, "Image uploaded successfully", array("user" => $this->Product->get($productId)));
+    }
+
+    function getAllSizes()
+    {
+        $sizes = $this->Product->getAllSizes();
+
+        if (!$sizes) {
+            return Response::payload(404, false, "Sizes not found");
+        }
+
+        return Response::payload(
+            200,
+            true,
+            "Sizes retrieved successfully",
+            array("sizes" => $sizes)
+        );
+    }
+
+    function addSizeToProduct($productId, $sizeId)
+    {
+
+        $result = $this->Product->addSizeToProduct($productId, $sizeId);
+
+        return $result ? Response::payload(
+            200,
+            true,
+            "Size added to product successfully"
+        ) : Response::payload(500, false, "Failed to add size to product");
+    }
+
+    function removeSizeFromProduct($productId, $sizeId)
+    {
+
+        $result = $this->Product->removeSizeFromProduct($productId, $sizeId);
+
+        return $result ? Response::payload(
+            200,
+            true,
+            "Size removed from product successfully"
+        ) : Response::payload(500, false, "Failed to remove size from product");
+    }
+
+    function getSizesForProduct($productId)
+    {
+
+        $sizes = $this->Product->getSizesForProduct($productId);
+
+        if (!$sizes) {
+            return Response::payload(404, false, "Sizes not found");
+        }
+
+        return Response::payload(
+            200,
+            true,
+            "Sizes retrieved successfully",
+            array("sizes" => $sizes)
+        );
+    }
+
+    function getAllCategories()
+    {
+        $categories = $this->Product->getAllCategories();
+
+        if (!$categories) {
+            return Response::payload(404, false, "Categories not found");
+        }
+
+        return Response::payload(
+            200,
+            true,
+            "Categories retrieved successfully",
+            array("categories" => $categories)
+        );
+    }
+
+    function addCategoryToProduct($productId, $categoryId)
+    {
+
+        $result = $this->Product->addCategoryToProduct($productId, $categoryId);
+
+        return $result ? Response::payload(
+            200,
+            true,
+            "Category added to product successfully"
+        ) : Response::payload(500, false, "Failed to add category to product");
+    }
+
+    function removeCategoryFromProduct($productId, $categoryId)
+    {
+
+        $result = $this->Product->removeCategoryFromProduct($productId, $categoryId);
+
+        return $result ? Response::payload(
+            200,
+            true,
+            "Category removed from product successfully"
+        ) : Response::payload(500, false, "Failed to remove category from product");
+    }
+
+    function getCategoriesForProduct($productId)
+    {
+
+        $categories = $this->Product->getCategoriesForProduct($productId);
+
+        if (!$categories) {
+            return Response::payload(404, false, "Categories not found");
+        }
+
+        return Response::payload(
+            200,
+            true,
+            "Categories retrieved successfully",
+            array("categories" => $categories)
+        );
     }
 
 }

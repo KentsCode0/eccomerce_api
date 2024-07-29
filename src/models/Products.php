@@ -116,31 +116,162 @@ class Products
     }
 
     function uploadImage($id, $files)
-{
-    $target_file = self::$base_directory . basename($id . "_" . $files['image']['name']);
+    {
+        $target_file = self::$base_directory . basename($id . "_" . $files['image']['name']);
 
-    try {
-        if (!move_uploaded_file($files['image']['tmp_name'], $target_file)) {
-            throw new Exception('Failed to move uploaded file.');
+        try {
+            if (!move_uploaded_file($files['image']['tmp_name'], $target_file)) {
+                throw new Exception('Failed to move uploaded file.');
+            }
+        } catch (Exception $e) {
+            error_log('Upload Error: ' . $e->getMessage());
+            return false;
         }
-    } catch (Exception $e) {
-        error_log('Upload Error: ' . $e->getMessage());
-        return false;
+
+        $queryStr = "UPDATE product SET product_image=:product_image WHERE product_id = :id";
+
+        try {
+            $stmt = $this->pdo->prepare($queryStr);
+            $stmt->execute([
+                "product_image" => self::$path . $target_file,
+                "id" => $id
+            ]);
+            return $id;
+        } catch (PDOException $e) {
+            error_log('Database Error: ' . $e->getMessage());
+            return false;
+        }
     }
 
-    $queryStr = "UPDATE product SET product_image=:product_image WHERE product_id = :id";
-
-    try {
+    public function getAllCategories()
+    {
+        $queryStr = "SELECT * FROM ProductCategory";
         $stmt = $this->pdo->prepare($queryStr);
-        $stmt->execute([
-            "product_image" => self::$path . $target_file,
-            "id" => $id
-        ]);
-        return $id;
-    } catch (PDOException $e) {
-        error_log('Database Error: ' . $e->getMessage());
-        return false;
+
+        try {
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return null;
+        }
     }
-}
+
+    public function addCategoryToProduct($productId, $categoryId)
+    {
+        $queryStr = "INSERT INTO ProductCategoryMapping (product_id, category_id) VALUES (:product_id, :category_id)";
+        $stmt = $this->pdo->prepare($queryStr);
+
+        try {
+            $stmt->execute([
+                "product_id" => $productId,
+                "category_id" => $categoryId
+            ]);
+            return true;
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+    }
+
+    public function removeCategoryFromProduct($productId, $categoryId)
+    {
+        $queryStr = "DELETE FROM ProductCategoryMapping WHERE product_id = :product_id AND category_id = :category_id";
+        $stmt = $this->pdo->prepare($queryStr);
+
+        try {
+            $stmt->execute([
+                "product_id" => $productId,
+                "category_id" => $categoryId
+            ]);
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+    }
+
+    public function getCategoriesForProduct($productId)
+    {
+        $queryStr = "SELECT c.category_id, c.category_name 
+                    FROM ProductCategoryMapping pcm 
+                    JOIN ProductCategory c ON pcm.category_id = c.category_id 
+                    WHERE pcm.product_id = :product_id";
+        $stmt = $this->pdo->prepare($queryStr);
+
+        try {
+            $stmt->execute(["product_id" => $productId]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return null;
+        }
+    }
+
+    public function getAllSizes()
+    {
+        $queryStr = "SELECT * FROM ProductSize";
+        $stmt = $this->pdo->prepare($queryStr);
+
+        try {
+            $stmt->execute();
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return null;
+        }
+    }    
+
+    public function addSizeToProduct($productId, $sizeId)
+    {
+        $queryStr = "INSERT INTO ProductSizeMapping (product_id, size_id) VALUES (:product_id, :size_id)";
+        $stmt = $this->pdo->prepare($queryStr);
+
+        try {
+            $stmt->execute([
+                "product_id" => $productId,
+                "size_id" => $sizeId
+            ]);
+            return true;
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+    }
+
+    public function removeSizeFromProduct($productId, $sizeId)
+    {
+        $queryStr = "DELETE FROM ProductSizeMapping WHERE product_id = :product_id AND size_id = :size_id";
+        $stmt = $this->pdo->prepare($queryStr);
+
+        try {
+            $stmt->execute([
+                "product_id" => $productId,
+                "size_id" => $sizeId
+            ]);
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+    }
+
+    public function getSizesForProduct($productId)
+    {
+        $queryStr = "SELECT s.size_id, s.size_label 
+                    FROM ProductSizeMapping psm 
+                    JOIN ProductSize s ON psm.size_id = s.size_id 
+                    WHERE psm.product_id = :product_id";
+        $stmt = $this->pdo->prepare($queryStr);
+
+        try {
+            $stmt->execute(["product_id" => $productId]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return null;
+        }
+    }
+
 
 }

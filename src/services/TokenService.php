@@ -65,7 +65,7 @@ class TokenService
 
         $payload = array(
             'iat'  => $this->issuedAt->getTimestamp(),
-            'iss'  => "https://anuwrap.vercel.app/",     
+            'iss'  => "https://ecommerce.vercel.app/",     
             'nbf'  => $this->issuedAt->getTimestamp(),
             'exp'  => $this->issuedAt->modify('+1 day')->getTimestamp(),
             "user_id" => $user["user_id"],

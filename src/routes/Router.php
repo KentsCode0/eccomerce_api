@@ -35,6 +35,18 @@ class Router
             $r->addRoute('DELETE', '/products/{productId:\d+}', [ProductController::class, 'deleteProduct']);
             $r->addRoute('POST', '/products/{productId:\d+}/productimage', [ProductController::class, 'uploadImage']);
 
+            // Sizes
+            $r->addRoute('POST', '/products/{productId:\d+}/sizes/{sizeId:\d+}', [ProductController::class, 'addSizeToProduct']);
+            $r->addRoute('DELETE', '/products/{productId:\d+}/sizes/{sizeId:\d+}', [ProductController::class, 'removeSizeFromProduct']);
+            $r->addRoute('GET', '/products/{productId:\d+}/sizes', [ProductController::class, 'getSizesForProduct']);
+            $r->addRoute('GET', '/sizes', [ProductController::class, 'getAllSizes']);
+
+            // Categories
+            $r->addRoute('POST', '/products/{productId:\d+}/categories/{categoryId:\d+}', [ProductController::class, 'addCategoryToProduct']);
+            $r->addRoute('DELETE', '/products/{productId:\d+}/categories/{categoryId:\d+}', [ProductController::class, 'removeCategoryFromProduct']);
+            $r->addRoute('GET', '/products/{productId:\d+}/categories', [ProductController::class, 'getCategoriesForProduct']);
+            $r->addRoute('GET', '/categories', [ProductController::class, 'getAllCategories']);
+       
             /* orders */
             $r->addRoute('POST', '/orders', [OrderController::class, 'createOrder']);
             $r->addRoute('GET', '/orders', [OrderController::class, 'getAllOrders']);
