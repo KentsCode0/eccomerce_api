@@ -35,7 +35,6 @@ CREATE TABLE IF NOT EXISTS ProductCategoryMapping (
     FOREIGN KEY (category_id) REFERENCES ProductCategory(category_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-
 CREATE TABLE IF NOT EXISTS ProductSize (
     size_id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     size_label VARCHAR(50) NOT NULL,

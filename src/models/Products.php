@@ -273,5 +273,33 @@ class Products
         }
     }
 
+    public function createCategory($category_name)
+    {
+        $queryStr = "INSERT INTO ProductCategory (category_name) VALUES (:category_name)";
+        $stmt = $this->pdo->prepare($queryStr);
+
+        try {
+            $stmt->execute(["category_name" => $category_name]);
+            return $this->pdo->lastInsertId();
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+    }
+
+    public function createSize($size_label)
+    {
+        $queryStr = "INSERT INTO ProductSize (size_label) VALUES (:size_label)";
+        $stmt = $this->pdo->prepare($queryStr);
+
+        try {
+            $stmt->execute(["size_label" => $size_label]);
+            return $this->pdo->lastInsertId();
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+    }
+
 
 }

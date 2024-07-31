@@ -198,5 +198,29 @@ class ProductController
 
         echo json_encode($payload);
     }
+    
+    public function createCategory($request)
+    {
+        $category_name = $request['category_name'];
+        $result = $this->productService->createCategory($category_name);
+
+        if ($result) {
+            echo json_encode(['status' => 'success', 'data' => ['category_id' => $result]]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to create category']);
+        }
+    }
+
+    public function createSize($request)
+    {
+        $size_label = $request['size_label'];
+        $result = $this->productService->createSize($size_label);
+
+        if ($result) {
+            echo json_encode(['status' => 'success', 'data' => ['size_id' => $result]]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to create size']);
+        }
+    }
 
 }

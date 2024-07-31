@@ -237,4 +237,14 @@ class ProductService
         );
     }
 
+    public function createCategory($category_name)
+    {
+        return $this->Product->createCategory($category_name);
+    }
+
+    public function createSize($size_label)
+    {
+        return $this->Product->createSize($size_label);
+    }
+
 }

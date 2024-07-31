@@ -8,11 +8,12 @@ use Src\Controllers\UsersController;
 use Src\Controllers\OrderController;
 use Src\Controllers\OrderItemsController;
 use Src\Controllers\TokenController;
+use Src\Controllers\CartController;
 
 class Router
 {
     private $dispatcher;
-    
+
     public function __construct()
     {
         $this->dispatcher = FastRoute\simpleDispatcher(function (FastRoute\RouteCollector $r) {
@@ -36,17 +37,19 @@ class Router
             $r->addRoute('POST', '/products/{productId:\d+}/productimage', [ProductController::class, 'uploadImage']);
 
             // Sizes
+            $r->addRoute('POST', '/sizes', [ProductController::class, 'createSize']);
             $r->addRoute('POST', '/products/{productId:\d+}/sizes/{sizeId:\d+}', [ProductController::class, 'addSizeToProduct']);
             $r->addRoute('DELETE', '/products/{productId:\d+}/sizes/{sizeId:\d+}', [ProductController::class, 'removeSizeFromProduct']);
             $r->addRoute('GET', '/products/{productId:\d+}/sizes', [ProductController::class, 'getSizesForProduct']);
             $r->addRoute('GET', '/sizes', [ProductController::class, 'getAllSizes']);
 
             // Categories
+            $r->addRoute('POST', '/categories', [ProductController::class, 'createCategory']);
             $r->addRoute('POST', '/products/{productId:\d+}/categories/{categoryId:\d+}', [ProductController::class, 'addCategoryToProduct']);
             $r->addRoute('DELETE', '/products/{productId:\d+}/categories/{categoryId:\d+}', [ProductController::class, 'removeCategoryFromProduct']);
             $r->addRoute('GET', '/products/{productId:\d+}/categories', [ProductController::class, 'getCategoriesForProduct']);
             $r->addRoute('GET', '/categories', [ProductController::class, 'getAllCategories']);
-       
+
             /* orders */
             $r->addRoute('POST', '/orders', [OrderController::class, 'createOrder']);
             $r->addRoute('GET', '/orders', [OrderController::class, 'getAllOrders']);
@@ -60,6 +63,15 @@ class Router
             $r->addRoute('GET', '/orderitems/{orderItemId:\d+}', [OrderItemsController::class, 'getOrderItem']);
             $r->addRoute('PUT', '/orderitems/{orderItemId:\d+}', [OrderItemsController::class, 'updateOrderItem']);
             $r->addRoute('DELETE', '/orderitems/{orderItemId:\d+}', [OrderItemsController::class, 'deleteOrderItem']);
+
+          /* cart */
+            $r->addRoute('POST', '/cart', [CartController::class, 'createCartItem']); // Add item to the cart
+            $r->addRoute('GET', '/cart/{user_id:\d+}/{product_id:\d+}/{size_id:\d+}', [CartController::class, 'getCartItem']); // Get specific cart item
+            $r->addRoute('GET', '/cart', [CartController::class, 'getAllCartItems']); // Get all cart items
+            $r->addRoute('PUT', '/cart/{user_id:\d+}/{product_id:\d+}/{size_id:\d+}', [CartController::class, 'updateCartItem']); // Update specific item in the cart
+            $r->addRoute('DELETE', '/cart/{user_id:\d+}/{product_id:\d+}/{size_id:\d+}', [CartController::class, 'deleteCartItem']); // Remove specific item from the cart
+            $r->addRoute('GET', '/cart/{userId:\d+}', [CartController::class, 'getCartItemsForUser']); // Get all items for a specific user
+
         });
     }
 
@@ -82,13 +94,19 @@ class Router
 
                 $controller = new $controllerName();
 
-                if (count($vars) == 0) {
-                    $controller->$method();
+                if ($method === 'createCategory' || $method === 'createSize' || $method === 'addItem' || $method === 'updateItem') {
+                    // For POST requests that need data from the request body
+                    $data = json_decode(file_get_contents('php://input'), true);
+                    $controller->$method($data);
                 } else {
-                    $controller->$method($vars);
+                    // For routes with URL parameters
+                    if (count($vars) == 0) {
+                        $controller->$method();
+                    } else {
+                        $controller->$method($vars);
+                    }
                 }
                 break;
         }
     }
 }
-?>
