@@ -1,5 +1,4 @@
 <?php
-
 namespace Src\Controllers;
 
 use Src\Services\OrderService;
@@ -15,12 +14,10 @@ class OrderController
 
     function createOrder()
     {
-        $postData = json_decode(file_get_contents("php://input"));
-        $postData = json_decode(json_encode($postData), true);
-        $payload = $this->orderService->create($postData);
+        $postData = json_decode(file_get_contents("php://input"), true);
+        $payload = $this->orderService->createOrder($postData);
 
-        if(array_key_exists("code", $payload))
-        {
+        if (array_key_exists("code", $payload)) {
             http_response_code($payload["code"]);
             unset($payload["code"]);
         }
@@ -29,11 +26,10 @@ class OrderController
 
     function getOrder($request)
     {
-        $orderId = $request["orderId"];
-        $payload = $this->orderService->get($orderId);
+        $order_id = $request["order_id"];
+        $payload = $this->orderService->get($order_id);
 
-        if(array_key_exists("code", $payload))
-        {
+        if (array_key_exists("code", $payload)) {
             http_response_code($payload["code"]);
             unset($payload["code"]);
         }
@@ -44,8 +40,7 @@ class OrderController
     {
         $payload = $this->orderService->getAll();
 
-        if(array_key_exists("code", $payload))
-        {
+        if (array_key_exists("code", $payload)) {
             http_response_code($payload["code"]);
             unset($payload["code"]);
         }
@@ -54,11 +49,10 @@ class OrderController
 
     function deleteOrder($request)
     {
-        $orderId = $request["orderId"];
-        $payload = $this->orderService->delete($orderId);
+        $order_id = $request["order_id"];
+        $payload = $this->orderService->delete($order_id);
 
-        if(array_key_exists("code", $payload))
-        {
+        if (array_key_exists("code", $payload)) {
             http_response_code($payload["code"]);
             unset($payload["code"]);
         }
@@ -66,17 +60,39 @@ class OrderController
     }
 
     function updateOrder($request)
-    {
-        $orderId = $request["orderId"];
-        $postData = json_decode(file_get_contents("php://input"));
-        $postData = json_decode(json_encode($postData), true);
-        $payload = $this->orderService->update($postData, $orderId);
+{
+    $order_id = $request["order_id"];
+    $postData = json_decode(file_get_contents("php://input"), true);
 
-        if(array_key_exists("code", $payload))
-        {
+    // Ensure required keys are present
+    if (!isset($postData["receiver_name"])) {
+        $postData["receiver_name"] = null; // Or some default value if necessary
+    }
+    if (!isset($postData["receiver_address"])) {
+        $postData["receiver_address"] = null; // Or some default value if necessary
+    }
+
+    $payload = $this->orderService->update($postData, $order_id);
+
+    if (array_key_exists("code", $payload)) {
+        http_response_code($payload["code"]);
+        unset($payload["code"]);
+    }
+    echo json_encode($payload);
+}
+
+
+    function completeOrder($request)
+    {
+        $order_id = $request["order_id"];
+        $payload = $this->orderService->completeOrder($order_id);
+
+        if (array_key_exists("code", $payload)) {
             http_response_code($payload["code"]);
             unset($payload["code"]);
         }
         echo json_encode($payload);
     }
+
+    
 }

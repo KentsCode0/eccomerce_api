@@ -117,29 +117,38 @@ class UserService
     }
 
     function updateUser($id, $newUserInfo)
+{
+    $matches = $this->tokenService->isTokenMatch($id);
+    if (!$matches) {
+        return Response::payload(401, false, "Unauthorized access");
+    }
+
+    if (empty($newUserInfo)) {
+        return Response::payload(400, false, "No fields found");
+    }
+
+    $errors = $this->validate($newUserInfo);
+
+    if (!empty($errors)) {
+        return Response::payload(400, false, "Update Unsuccessful", errors: $errors);
+    }
+
+    if (!$this->userModel->get($id)) {
+        return Response::payload(404, false, "User not found");
+    }
+
+    $updated_user = $this->userModel->update($id, $newUserInfo);
+    return $updated_user ? Response::payload(200, true, "Update successful", array("user" => $this->userModel->get($id)))
+        : Response::payload(400, false, "Contact administrator (belenkentharold@gmail.com)");
+}
+
+
+
+    function uploadImage($id, $files)
     {
-        $matches = $this->tokenService->isTokenMatch($id);
-        if (!$matches) {
-            return Response::payload(401, false, "unauthorized access");
-        }
 
-        if (count($newUserInfo) < 1) {
-            return Response::payload(400, false, "no fields found");
-        }
-
-        $errors = $this->validate($newUserInfo);
-
-        if (count($errors) > 0) {
-            return Response::payload(400, false, "Update Unsuccessful", errors: $errors);
-        }
-
-        if (!$this->userModel->get($id)) {
-            return Response::payload(404, false, "User not found");
-        }
-
-        $updated_user = $this->userModel->update($id, $newUserInfo);
-        return $updated_user ? Response::payload(200, true, "Update successful", array("user" => $this->userModel->get($id)))
-            : Response::payload(400, False, message: "Contact administrator (belenkentharold@gmail.com)",);
+        $this->userModel->uploadUserAvatar($id, $files);
+        return Response::payload(200, true, "Image uploaded successfully", array("user" => $this->userModel->get($id)));
     }
 
     function validate($user)

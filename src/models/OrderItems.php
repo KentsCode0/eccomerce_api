@@ -1,5 +1,4 @@
 <?php
-
 namespace Src\Models;
 
 use PDOException;
@@ -7,6 +6,7 @@ use PDOException;
 class OrderItems
 {
     private $pdo;
+
     function __construct($pdo)
     {
         $this->pdo = $pdo;
@@ -14,12 +14,16 @@ class OrderItems
 
     function get($id)
     {
-        $queryStr = "SELECT * FROM orderitems WHERE order_item_id = :id";
+        $queryStr = "SELECT OrderItems.*, Product.product_name AS product_name, Product.product_description AS product_description, Product.product_image AS product_image, ProductSize.size_label AS size_name 
+                     FROM OrderItems 
+                     JOIN Product ON OrderItems.product_id = Product.product_id
+                     JOIN ProductSize ON OrderItems.size_id = ProductSize.size_id
+                     WHERE OrderItems.order_item_id = :id";
         $stmt = $this->pdo->prepare($queryStr);
 
         try {
-            $stmt->execute(array("id" => $id));
-            $report = $stmt->fetch();
+            $stmt->execute(["id" => $id]);
+            $report = $stmt->fetch(\PDO::FETCH_ASSOC);
             return $report;
         } catch (PDOException $e) {
             error_log($e->getMessage());
@@ -27,19 +31,18 @@ class OrderItems
         }
     }
 
-    function getAll($filter = "")
+    function getAll($orderId)
     {
-        if ($filter == "") {
-            $queryStr = "SELECT * FROM orderitems";
-        } else {
-            $queryStr = "SELECT * FROM orderitems WHERE $filter";
-        }
-
+        $queryStr = "SELECT OrderItems.*, Product.product_name AS product_name, Product.product_description AS product_description, Product.product_image AS product_image, ProductSize.size_label AS size_name 
+                     FROM OrderItems 
+                     JOIN Product ON OrderItems.product_id = Product.product_id
+                     JOIN ProductSize ON OrderItems.size_id = ProductSize.size_id
+                     WHERE OrderItems.order_id = :orderId";
         $stmt = $this->pdo->prepare($queryStr);
 
         try {
-            $stmt->execute();
-            $report = $stmt->fetchAll();
+            $stmt->execute(["orderId" => $orderId]);
+            $report = $stmt->fetchAll(\PDO::FETCH_ASSOC);
             return $report;
         } catch (PDOException $e) {
             error_log($e->getMessage());
@@ -47,32 +50,34 @@ class OrderItems
         }
     }
 
-    public function create($request)
+    function create($request)
     {
-        $queryStr = "INSERT INTO orderitems (order_id, product_id, quantity, price) VALUES (:order_id, :product_id, :quantity, :price)";
+        $queryStr = "INSERT INTO OrderItems(order_id, product_id, size_id, quantity, price) 
+                     VALUES (:order_id, :product_id, :size_id, :quantity, :price)";
         $stmt = $this->pdo->prepare($queryStr);
 
         try {
             $stmt->execute([
                 "order_id" => $request["order_id"],
                 "product_id" => $request["product_id"],
+                "size_id" => $request["size_id"],
                 "quantity" => $request["quantity"],
                 "price" => $request["price"]
             ]);
             return $this->pdo->lastInsertId();
         } catch (PDOException $e) {
-            error_log($e->getMessage());
+            error_log("SQL Error: " . $e->getMessage());
             return false;
         }
     }
 
     function delete($id)
     {
-        $queryStr = "DELETE FROM orderitems WHERE order_item_id = :id";
+        $queryStr = "DELETE FROM OrderItems WHERE order_item_id = :id";
         $stmt = $this->pdo->prepare($queryStr);
 
         try {
-            $stmt->execute(array("id" => $id));
+            $stmt->execute(["id" => $id]);
             return $stmt->rowCount() > 0;
         } catch (PDOException $e) {
             error_log($e->getMessage());
@@ -82,22 +87,20 @@ class OrderItems
 
     function update($request, $id)
     {
-        $order_id = $request["order_id"];
-        $product_id = $request["product_id"];
-        $quantity = $request["quantity"];
-        $price = $request["price"];
-
-        $queryStr = "UPDATE orderitems SET order_id=:order_id, product_id=:product_id, quantity=:quantity, price=:price WHERE order_item_id = :id";
+        $queryStr = "UPDATE OrderItems 
+                     SET order_id = :order_id, product_id = :product_id, size_id = :size_id, quantity = :quantity, price = :price 
+                     WHERE order_item_id = :id";
         $stmt = $this->pdo->prepare($queryStr);
 
         try {
-            $stmt->execute(array(
-                "order_id" => $order_id,
-                "product_id" => $product_id,
-                "quantity" => $quantity,
-                "price" => $price,
+            $stmt->execute([
+                "order_id" => $request["order_id"],
+                "product_id" => $request["product_id"],
+                "size_id" => $request["size_id"],
+                "quantity" => $request["quantity"],
+                "price" => $request["price"],
                 "id" => $id
-            ));
+            ]);
             return $id;
         } catch (PDOException $e) {
             error_log($e->getMessage());

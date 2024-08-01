@@ -5,139 +5,98 @@ use Src\Models\OrderItems;
 use Src\Config\DatabaseConnector;
 use Src\Utils\Checker;
 use Src\Utils\Response;
-use Src\Utils\Filter;
 
 class OrderItemService
 {
     private $pdo;
-    private $tokenService;
-    private $orderItem;
-    private $filter;
+    private $orderItems;
 
     function __construct()
     {
         $this->pdo = (new DatabaseConnector())->getConnection();
-        $this->orderItem = new OrderItems($this->pdo);
-        $this->tokenService = new TokenService();
-        $this->filter = new Filter("order_item_id", "order_id", "product_id");
+        $this->orderItems = new OrderItems($this->pdo);
     }
 
-    function create($orderItem)
+    function createOrderItem($orderItem)
     {
-        $token = $this->tokenService->readEncodedToken();
-
-        if (!$token) {
-            return Response::payload(404, false, "unauthorized access");
+        if (!Checker::isFieldExist($orderItem, ["order_id", "product_id", "size_id", "quantity", "price"])) {
+            return Response::payload(400, false, "order_id, product_id, size_id, quantity, and price are required");
         }
 
-        if (!Checker::isFieldExist($orderItem, ["order_id", "product_id", "quantity", "price"])) {
-            return Response::payload(400, false, "order_id, product_id, quantity, and price are required");
+        $orderItemId = $this->orderItems->create($orderItem);
+
+        if (!$orderItemId) {
+            return Response::payload(500, false, "Contact administrator (belenkentharold@gmail.com)");
         }
 
-        $orderItemId = $this->orderItem->create($orderItem);
-
-        if ($orderItemId === false) {
-            return Response::payload(500, false, array("message" => "Contact administrator (your-email@example.com)"));
-        }
-
-        return $orderItemId ? Response::payload(
+        return Response::payload(
             201,
             true,
             "Order item created successfully",
-            array("order_item" => $this->orderItem->get($orderItemId))
-        ) : Response::payload(400, false, "Contact administrator (your-email@example.com)");
+            ["order_item_id" => $orderItemId]
+        );
     }
 
     function get($orderItemId)
     {
-        $token = $this->tokenService->readEncodedToken();
-
-        if (!$token) {
-            return Response::payload(404, false, "unauthorized access");
-        }
-
-        $orderItem = $this->orderItem->get($orderItemId);
+        $orderItem = $this->orderItems->get($orderItemId);
 
         if (!$orderItem) {
             return Response::payload(404, false, "Order item not found");
         }
 
-        return $orderItem ? Response::payload(
+        return Response::payload(
             200,
             true,
             "Order item found",
-            array("order_item" => $orderItem)
-        ) : Response::payload(400, false, "Contact administrator (your-email@example.com)");
+            ["order_item" => $orderItem]
+        );
     }
 
-    function getAll()
+    function getAll($orderId)
     {
-        $token = $this->tokenService->readEncodedToken();
-
-        if (!$token) {
-            return Response::payload(404, false, "unauthorized access");
-        }
-
-        $filterStr = $this->filter->getFilterStr();
-
-        if (str_contains($filterStr, "unavailable") || str_contains($filterStr, "empty")) {
-            return Response::payload(400, false, $filterStr);
-        }
-
-        $orderItems = $this->orderItem->getAll($filterStr);
+        $orderItems = $this->orderItems->getAll($orderId);
 
         if (!$orderItems) {
             return Response::payload(404, false, "Order items not found");
         }
 
-        return $orderItems ? Response::payload(
+        return Response::payload(
             200,
             true,
             "Order items found",
-            array("order_items" => $orderItems)
-        ) : Response::payload(400, false, "Contact administrator (your-email@example.com)");
+            ["order_items" => $orderItems]
+        );
     }
 
     function update($orderItem, $orderItemId)
     {
-        $token = $this->tokenService->readEncodedToken();
-
-        if (!$token) {
-            return Response::payload(404, false, "unauthorized access");
-        }
-
-        $orderItemUpdated = $this->orderItem->update($orderItem, $orderItemId);
+        $orderItemUpdated = $this->orderItems->update($orderItem, $orderItemId);
 
         if (!$orderItemUpdated) {
             return Response::payload(404, false, "Update unsuccessful");
         }
 
-        return $orderItemUpdated ? Response::payload(
+        return Response::payload(
             200,
             true,
             "Order item updated successfully",
-            array("order_item" => $this->orderItem->get($orderItemId))
-        ) : Response::payload(400, false, "Contact administrator (your-email@example.com)");
+            ["order_item" => $this->orderItems->get($orderItemId)]
+        );
     }
 
     function delete($orderItemId)
     {
-        $token = $this->tokenService->readEncodedToken();
-
-        if (!$token) {
-            return Response::payload(404, false, "unauthorized access");
-        }
-
-        $orderItemDeleted = $this->orderItem->delete($orderItemId);
+        $orderItemDeleted = $this->orderItems->delete($orderItemId);
 
         if (!$orderItemDeleted) {
             return Response::payload(404, false, "Deletion unsuccessful");
         }
 
-        return $orderItemDeleted ? Response::payload(
+        return Response::payload(
             200,
             true,
             "Order item deleted successfully"
-        ) : Response::payload(400, false, "Contact administrator (your-email@example.com)");
+        );
     }
 }

@@ -1,9 +1,10 @@
-
 CREATE TABLE IF NOT EXISTS Users (
     user_id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     username VARCHAR(100) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,  
+    password VARCHAR(255) NOT NULL,
+    avatar VARCHAR(255), 
+    address VARCHAR(255), 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id)
@@ -50,12 +51,23 @@ CREATE TABLE IF NOT EXISTS ProductSizeMapping (
     FOREIGN KEY (size_id) REFERENCES ProductSize(size_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+CREATE TABLE IF NOT EXISTS Cart (
+    user_id INT(10) UNSIGNED NOT NULL,
+    product_id INT(10) UNSIGNED NOT NULL,
+    size_id INT(10) UNSIGNED NOT NULL,
+    quantity INT(10) UNSIGNED NOT NULL,
+    PRIMARY KEY (user_id, product_id, size_id),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES Product(product_id) ON DELETE CASCADE,
+    FOREIGN KEY (size_id) REFERENCES ProductSize(size_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE IF NOT EXISTS Orders (
     order_id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id INT(10) UNSIGNED NOT NULL,
-    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     total_amount DECIMAL(10, 2) NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'completed', 'cancelled') DEFAULT 'pending',
     PRIMARY KEY (order_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -64,9 +76,11 @@ CREATE TABLE IF NOT EXISTS OrderItems (
     order_item_id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     order_id INT(10) UNSIGNED NOT NULL,
     product_id INT(10) UNSIGNED NOT NULL,
-    quantity INT(10) NOT NULL,
+    size_id INT(10) UNSIGNED NOT NULL,
+    quantity INT(10) UNSIGNED NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
     PRIMARY KEY (order_item_id),
     FOREIGN KEY (order_id) REFERENCES Orders(order_id) ON DELETE CASCADE,
-    FOREIGN KEY (product_id) REFERENCES Product(product_id) ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES Product(product_id) ON DELETE CASCADE,
+    FOREIGN KEY (size_id) REFERENCES ProductSize(size_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

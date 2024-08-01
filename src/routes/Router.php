@@ -24,6 +24,7 @@ class Router
             $r->addRoute('GET', '/users/{userId:\d+}', [UsersController::class, 'getUser']);
             $r->addRoute('PATCH', '/users/{userId:\d+}', [UsersController::class, 'updateUser']);
             $r->addRoute('DELETE', '/users/{userId:\d+}', [UsersController::class, 'deleteUser']);
+            $r->addRoute('POST', '/users/{userId:\d+}/avatar', [UsersController::class, 'uploadImage']);
 
             /* tokens */
             $r->addRoute('POST', '/token', [TokenController::class, 'postToken']);
@@ -51,18 +52,19 @@ class Router
             $r->addRoute('GET', '/categories', [ProductController::class, 'getAllCategories']);
 
             /* orders */
-            $r->addRoute('POST', '/orders', [OrderController::class, 'createOrder']);
-            $r->addRoute('GET', '/orders', [OrderController::class, 'getAllOrders']);
-            $r->addRoute('GET', '/orders/{orderId:\d+}', [OrderController::class, 'getOrder']);
-            $r->addRoute('PUT', '/orders/{orderId:\d+}', [OrderController::class, 'updateOrder']);
-            $r->addRoute('DELETE', '/orders/{orderId:\d+}', [OrderController::class, 'deleteOrder']);
+            $r->post('/orders', [OrderController::class, 'createOrder']);
+            $r->get('/orders/{order_id}', [OrderController::class, 'getOrder']);
+            $r->get('/orders', [OrderController::class, 'getAllOrders']);
+            $r->put('/orders/{order_id}', [OrderController::class, 'updateOrder']);
+            $r->delete('/orders/{order_id}', [OrderController::class, 'deleteOrder']);
+            $r->put('/orders/{order_id}/complete', [OrderController::class, 'completeOrder']);
 
             /* order items */
-            $r->addRoute('POST', '/orderitems', [OrderItemsController::class, 'createOrderItem']);
-            $r->addRoute('GET', '/orderitems', [OrderItemsController::class, 'getAllOrderItems']);
-            $r->addRoute('GET', '/orderitems/{orderItemId:\d+}', [OrderItemsController::class, 'getOrderItem']);
-            $r->addRoute('PUT', '/orderitems/{orderItemId:\d+}', [OrderItemsController::class, 'updateOrderItem']);
-            $r->addRoute('DELETE', '/orderitems/{orderItemId:\d+}', [OrderItemsController::class, 'deleteOrderItem']);
+            $r->addRoute('POST', '/order-items', [OrderItemsController::class, 'createOrderItem']);
+            $r->addRoute('GET', '/order-items/{order_item_id:\d+}', [OrderItemsController::class, 'getOrderItem']);
+            $r->addRoute('GET', '/orders/{order_id:\d+}/items', [OrderItemsController::class, 'getAllOrderItems']);
+            $r->addRoute('PUT', '/order-items/{order_item_id:\d+}', [OrderItemsController::class, 'updateOrderItem']);
+            $r->addRoute('DELETE', '/order-items/{order_item_id:\d+}', [OrderItemsController::class, 'deleteOrderItem']);
 
           /* cart */
             $r->addRoute('POST', '/cart', [CartController::class, 'createCartItem']); // Add item to the cart
@@ -94,7 +96,7 @@ class Router
 
                 $controller = new $controllerName();
 
-                if ($method === 'createCategory' || $method === 'createSize' || $method === 'addItem' || $method === 'updateItem') {
+                if ($method === 'createOrderItem') {
                     // For POST requests that need data from the request body
                     $data = json_decode(file_get_contents('php://input'), true);
                     $controller->$method($data);

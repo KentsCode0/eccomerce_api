@@ -6,21 +6,19 @@ use Src\Services\OrderItemService;
 
 class OrderItemsController
 {
-    private $orderItemService;
+    private $orderItemsService;
     
     function __construct()
     {
-        $this->orderItemService = new OrderItemService();
+        $this->orderItemsService = new OrderItemService();
     }
 
     function createOrderItem()
     {
-        $postData = json_decode(file_get_contents("php://input"));
-        $postData = json_decode(json_encode($postData), true);
-        $payload = $this->orderItemService->create($postData);
+        $postData = json_decode(file_get_contents("php://input"), true);
+        $payload = $this->orderItemsService->createOrderItem($postData);
 
-        if(array_key_exists("code", $payload))
-        {
+        if (array_key_exists("code", $payload)) {
             http_response_code($payload["code"]);
             unset($payload["code"]);
         }
@@ -29,23 +27,22 @@ class OrderItemsController
 
     function getOrderItem($request)
     {
-        $orderItemId = $request["orderItemId"];
-        $payload = $this->orderItemService->get($orderItemId);
+        $order_item_id = $request["order_item_id"];
+        $payload = $this->orderItemsService->get($order_item_id);
 
-        if(array_key_exists("code", $payload))
-        {
+        if (array_key_exists("code", $payload)) {
             http_response_code($payload["code"]);
             unset($payload["code"]);
         }
         echo json_encode($payload);
     }
 
-    function getAllOrderItems()
+    function getAllOrderItems($request)
     {
-        $payload = $this->orderItemService->getAll();
+        $order_id = $request["order_id"];
+        $payload = $this->orderItemsService->getAll($order_id);
 
-        if(array_key_exists("code", $payload))
-        {
+        if (array_key_exists("code", $payload)) {
             http_response_code($payload["code"]);
             unset($payload["code"]);
         }
@@ -54,11 +51,10 @@ class OrderItemsController
 
     function deleteOrderItem($request)
     {
-        $orderItemId = $request["orderItemId"];
-        $payload = $this->orderItemService->delete($orderItemId);
+        $order_item_id = $request["order_item_id"];
+        $payload = $this->orderItemsService->delete($order_item_id);
 
-        if(array_key_exists("code", $payload))
-        {
+        if (array_key_exists("code", $payload)) {
             http_response_code($payload["code"]);
             unset($payload["code"]);
         }
@@ -67,13 +63,11 @@ class OrderItemsController
 
     function updateOrderItem($request)
     {
-        $orderItemId = $request["orderItemId"];
-        $postData = json_decode(file_get_contents("php://input"));
-        $postData = json_decode(json_encode($postData), true);
-        $payload = $this->orderItemService->update($postData, $orderItemId);
+        $order_item_id = $request["order_item_id"];
+        $postData = json_decode(file_get_contents("php://input"), true);
+        $payload = $this->orderItemsService->update($postData, $order_item_id);
 
-        if(array_key_exists("code", $payload))
-        {
+        if (array_key_exists("code", $payload)) {
             http_response_code($payload["code"]);
             unset($payload["code"]);
         }

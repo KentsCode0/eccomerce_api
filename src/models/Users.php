@@ -3,10 +3,12 @@
 namespace Src\Models;
 
 use PDOException;
-
+use Exception;
 class Users
 {
     private $pdo;
+    private static $base_directory = "../uploads/users/";
+    private static $path = "http://localhost/ecommerce-api/public/";
     function __construct($pdo)
     {
         $this->pdo = $pdo;
@@ -93,26 +95,63 @@ class Users
         }
     }
 
-    function update($request, $id)
+    function update($id, $request)
+{
+    $fields = [];
+    $params = [];
+
+    // Build dynamic query and parameters
+    foreach ($request as $key => $value) {
+        if ($key !== 'user_id' && !empty($value)) {
+            $fields[] = "$key = :$key";
+            $params[$key] = $value;
+        }
+    }
+
+    if (empty($fields)) {
+        return false; // No fields to update
+    }
+
+    $fieldsList = implode(", ", $fields);
+    $queryStr = "UPDATE users SET $fieldsList WHERE user_id = :id";
+    $params['id'] = $id;
+
+    $stmt = $this->pdo->prepare($queryStr);
+
+    try {
+        $stmt->execute($params);
+        return $id;
+    } catch (PDOException $e) {
+        error_log($e->getMessage());
+        return false;
+    }
+}
+
+
+    function uploadUserAvatar($id, $files)
     {
-        $username = $request["username"];
-        $password = $request["password"];
+        $target_file = self::$base_directory . basename($id . "_" . $files['image']['name']);
 
-        $queryStr = "UPDATE Report 
-            SET username=:username, password=:password WHERE user_id = :id";
-
-        $stmt = $this->pdo->prepare($queryStr);
         try {
-            $stmt->execute(
-                array(
-                    "username" => $username,
-                    "password" => $password,
-                    "id" => $id
-                )
-            );
+            if (!move_uploaded_file($files['image']['tmp_name'], $target_file)) {
+                throw new Exception('Failed to move uploaded file.');
+            }
+        } catch (Exception $e) {
+            error_log('Upload Error: ' . $e->getMessage());
+            return false;
+        }
+
+        $queryStr = "UPDATE users SET avatar=:avatar WHERE user_id = :id";
+
+        try {
+            $stmt = $this->pdo->prepare($queryStr);
+            $stmt->execute([
+                "avatar" => self::$path . $target_file,
+                "id" => $id
+            ]);
             return $id;
         } catch (PDOException $e) {
-            error_log($e->getMessage());
+            error_log('Database Error: ' . $e->getMessage());
             return false;
         }
     }
