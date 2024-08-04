@@ -78,37 +78,38 @@ class Router
     }
 
     public function handle($method, $uri)
-    {
-        $routeInfo = $this->dispatcher->dispatch($method, $uri);
-        switch ($routeInfo[0]) {
-            case FastRoute\Dispatcher::NOT_FOUND:
-                http_response_code(404);
-                echo json_encode(array("error" => "Not found"));
-                break;
-            case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
-                http_response_code(405);
-                echo json_encode(array("error" => "Method not allowed"));
-                break;
-            case FastRoute\Dispatcher::FOUND:
-                $controllerName = $routeInfo[1][0];
-                $method = $routeInfo[1][1];
-                $vars = $routeInfo[2];
+{
+    $routeInfo = $this->dispatcher->dispatch($method, $uri);
+    switch ($routeInfo[0]) {
+        case FastRoute\Dispatcher::NOT_FOUND:
+            http_response_code(404);
+            echo json_encode(array("error" => "Not found"));
+            break;
+        case FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
+            http_response_code(405);
+            echo json_encode(array("error" => "Method not allowed"));
+            break;
+        case FastRoute\Dispatcher::FOUND:
+            $controllerName = $routeInfo[1][0];
+            $method = $routeInfo[1][1];
+            $vars = $routeInfo[2];
 
-                $controller = new $controllerName();
+            $controller = new $controllerName();
 
-                if ($method === 'createOrderItem') {
-                    // For POST requests that need data from the request body
-                    $data = json_decode(file_get_contents('php://input'), true);
-                    $controller->$method($data);
+            if (in_array($method, ['createOrderItem', 'createCategory', 'createSize'])) {
+                // For POST requests that need data from the request body
+                $data = json_decode(file_get_contents('php://input'), true);
+                $controller->$method($data);
+            } else {
+                // For routes with URL parameters
+                if (count($vars) == 0) {
+                    $controller->$method();
                 } else {
-                    // For routes with URL parameters
-                    if (count($vars) == 0) {
-                        $controller->$method();
-                    } else {
-                        $controller->$method($vars);
-                    }
+                    $controller->$method($vars);
                 }
-                break;
-        }
+            }
+            break;
     }
+}
+
 }
