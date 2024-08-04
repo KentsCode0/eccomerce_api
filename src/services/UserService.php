@@ -157,10 +157,8 @@ class UserService
 
         if (Checker::isFieldExist($user, ["username"])) {
             $isUsernameExist = $this->UsernameExist($user["username"]);
-            $validateUsername = $this->validateUsernameFormat($user["username"]);
 
             if ($isUsernameExist) $errors["username"] = $isUsernameExist;
-            if ($validateUsername) $errors["username"] = $validateUsername;
         }
 
         if (Checker::isFieldExist($user, ["email"])) {
@@ -172,10 +170,8 @@ class UserService
         }
 
         if (Checker::isFieldExist($user, ["password"])) {
-            $validatePassword = $this->validatePasswordFormat($user["password"]);
             $isConfirmPasswordMatch = $this->confirmPasswordDoesNotMatch($user["password"], $user["confirm_password"]);
 
-            if ($validatePassword) $errors["password"] = $validatePassword;
             if ($isConfirmPasswordMatch) $errors["password1"] = $isConfirmPasswordMatch;
         }
 
@@ -194,20 +190,9 @@ class UserService
         return $email == true ? "email already exist" : false;
     }
 
-    function validateUsernameFormat($username)
-    {
-        return preg_match('/^[a-zA-Z0-9_]+$/', $username) ? null : "username should contain only letters, numbers, and underscores";
-    }
-
     function validateEmailFormat($email)
     {
         return preg_match('/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/', $email) ? null : "please enter a valid email address";
-    }
-
-    function validatePasswordFormat($password)
-    {
-        $requirements = "password should be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character";
-        return preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/', $password) ? null : $requirements;
     }
 
     function confirmPasswordDoesNotMatch($password, $password2)

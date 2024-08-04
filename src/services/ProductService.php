@@ -23,28 +23,29 @@ class ProductService
     }
 
     function create($product)
-    {
-        if (!Checker::isFieldExist($product, ["product_name", "product_description", "product_image", "product_price" ])) {
-            return Response::payload(
-                400,
-                false,
-                "product_name, and product_description , product_image, product_price is required"
-            );
-        }
-
-        $productId = $this->Product->create($product);
-
-        if ($productId === false) {
-            return Response::payload(500, false, array("message" => "Contact administrator (belenkentharold@gmail.com)"));
-        }
-
-        return $productId ? Response::payload(
-            201,
-            true,
-            "product created successfully",
-            array("product" => $this->Product->get($productId))
-        ) : Response::payload(400, False, message: "Contact administrator (belenkentharold@gmail.com)",);
+{
+    if (!Checker::isFieldExist($product, ["product_name", "product_description", "product_image", "product_price", "stock"])) {
+        return Response::payload(
+            400,
+            false,
+            "product_name, product_description, product_image, product_price, and stock are required"
+        );
     }
+
+    $productId = $this->Product->create($product);
+
+    if ($productId === false) {
+        return Response::payload(500, false, array("message" => "Contact administrator (belenkentharold@gmail.com)"));
+    }
+
+    return $productId ? Response::payload(
+        201,
+        true,
+        "product created successfully",
+        array("product" => $this->Product->get($productId))
+    ) : Response::payload(400, false, "Contact administrator (belenkentharold@gmail.com)");
+}
+
     
     function get($productId)
     {
@@ -85,21 +86,21 @@ class ProductService
     }
 
     function update($product, $productId)
-    {
+{
+    $product = $this->Product->update($product, $productId);
 
-        $product = $this->Product->update($product, $productId);
-
-        if (!$product) {
-            return Response::payload(404, false, "update unsuccessful");
-        }
-
-        return $product ? Response::payload(
-            200,
-            true,
-            "product updated successfully",
-            array("product" => $this->Product->get($productId))
-        ) : Response::payload(400, False, message: "Contact administrator (belenkentharold@gmail.com)",);
+    if (!$product) {
+        return Response::payload(404, false, "update unsuccessful");
     }
+
+    return $product ? Response::payload(
+        200,
+        true,
+        "product updated successfully",
+        array("product" => $this->Product->get($productId))
+    ) : Response::payload(400, false, "Contact administrator (belenkentharold@gmail.com)");
+}
+
     function delete($productId)
     {
 

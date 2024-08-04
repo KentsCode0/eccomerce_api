@@ -47,59 +47,65 @@ class Products
     }
 
     public function create($request)
-    {
-        $product_name = $request["product_name"];
-        $product_description = $request["product_description"];
-        $product_image = ""; // Default empty image
-        $product_price = $request["product_price"];
+{
+    $product_name = $request["product_name"];
+    $product_description = $request["product_description"];
+    $product_image = ""; // Default empty image
+    $product_price = $request["product_price"];
+    $stock = isset($request["stock"]) ? $request["stock"] : 0;
 
-        $queryStr = "INSERT INTO product(product_name, product_description, product_image, product_price) VALUES
-            (:product_name, :product_description, :product_image, :product_price)";
+    $queryStr = "INSERT INTO product (product_name, product_description, product_image, product_price, stock) VALUES
+        (:product_name, :product_description, :product_image, :product_price, :stock)";
 
-        $stmt = $this->pdo->prepare($queryStr);
+    $stmt = $this->pdo->prepare($queryStr);
 
-        try {
-            $stmt->execute([
-                "product_name" => $product_name,
-                "product_description" => $product_description,
-                "product_image" => $product_image,
-                "product_price" => $product_price,
-            ]);
-            return $this->pdo->lastInsertId();
-        } catch (PDOException $e) {
-            error_log($e->getMessage());
-            return false;
-        }
+    try {
+        $stmt->execute([
+            "product_name" => $product_name,
+            "product_description" => $product_description,
+            "product_image" => $product_image,
+            "product_price" => $product_price,
+            "stock" => $stock
+        ]);
+        return $this->pdo->lastInsertId();
+    } catch (PDOException $e) {
+        error_log($e->getMessage());
+        return false;
     }
+}
 
-    public function update($request, $id)
-    {
-        $product_name = $request["product_name"];
-        $product_description = $request["product_description"];
-        $product_price = $request["product_price"];
-        $product_image = isset($request["product_image"]) ? $request["product_image"] : '';
 
-        $queryStr = "UPDATE product 
-            SET product_name = :product_name, product_description = :product_description, 
-                product_image = :product_image, product_price = :product_price 
-            WHERE product_id = :id";
+public function update($request, $id)
+{
+    $product_name = $request["product_name"];
+    $product_description = $request["product_description"];
+    $product_price = $request["product_price"];
+    $product_image = isset($request["product_image"]) ? $request["product_image"] : '';
+    $stock = isset($request["stock"]) ? $request["stock"] : 0;
 
-        $stmt = $this->pdo->prepare($queryStr);
+    $queryStr = "UPDATE product 
+        SET product_name = :product_name, product_description = :product_description, 
+            product_image = :product_image, product_price = :product_price, stock = :stock
+        WHERE product_id = :id";
 
-        try {
-            $stmt->execute([
-                "product_name" => $product_name,
-                "product_description" => $product_description,
-                "product_image" => $product_image,
-                "product_price" => $product_price,
-                "id" => $id,
-            ]);
-            return $id;
-        } catch (PDOException $e) {
-            error_log($e->getMessage());
-            return false;
-        }
+    $stmt = $this->pdo->prepare($queryStr);
+
+    try {
+        $stmt->execute([
+            "product_name" => $product_name,
+            "product_description" => $product_description,
+            "product_image" => $product_image,
+            "product_price" => $product_price,
+            "stock" => $stock,
+            "id" => $id
+        ]);
+        return $id;
+    } catch (PDOException $e) {
+        error_log($e->getMessage());
+        return false;
     }
+}
+
 
     public function delete($id)
     {

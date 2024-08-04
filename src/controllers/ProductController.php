@@ -14,19 +14,18 @@ class ProductController
     }
 
     function createProduct()
-    {
+{
+    $postData = json_decode(file_get_contents("php://input"));
+    $postData = json_decode(json_encode($postData), true);
+    $payload = $this->productService->create($postData);
 
-        $postData = json_decode(file_get_contents("php://input"));
-        $postData = json_decode(json_encode($postData), true);
-        $payload = $this->productService->create($postData);
-
-        if(array_key_exists("code", $payload))
-        {
-            http_response_code($payload["code"]);
-            unset($payload["code"]);
-        }
-        echo json_encode($payload);
+    if (array_key_exists("code", $payload)) {
+        http_response_code($payload["code"]);
+        unset($payload["code"]);
     }
+    echo json_encode($payload);
+}
+
 
     function getProduct($request)
     {
@@ -67,19 +66,19 @@ class ProductController
     }
 
     function updateProduct($request)
-    {
-        $productId = $request["productId"];
-        $postData = json_decode(file_get_contents("php://input"));
-        $postData = json_decode(json_encode($postData), true);
-        $payload = $this->productService->update($postData, $productId);
+{
+    $productId = $request["productId"];
+    $postData = json_decode(file_get_contents("php://input"));
+    $postData = json_decode(json_encode($postData), true);
+    $payload = $this->productService->update($postData, $productId);
 
-        if(array_key_exists("code", $payload))
-        {
-            http_response_code($payload["code"]);
-            unset($payload["code"]);
-        }
-        echo json_encode($payload);
+    if (array_key_exists("code", $payload)) {
+        http_response_code($payload["code"]);
+        unset($payload["code"]);
     }
+    echo json_encode($payload);
+}
+
 
     function uploadImage($request){
         $payload = $this->productService->uploadImage($request["productId"], $_FILES);

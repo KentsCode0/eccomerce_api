@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS Product (
     product_id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     product_name VARCHAR(100) NOT NULL,
     product_description TEXT NOT NULL,
+    stock INT(10) UNSIGNED NOT NULL DEFAULT 0,
     product_image TEXT NOT NULL,
     product_price DECIMAL(10, 2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
