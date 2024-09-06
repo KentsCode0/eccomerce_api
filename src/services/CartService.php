@@ -26,20 +26,46 @@ class CartService
                 "user_id, product_id, size_id, and quantity are required"
             );
         }
-
-        $result = $this->Cart->create($cart);
-
-        if (!$result) {
-            return Response::payload(500, false, "Contact administrator (belenkentharold@gmail.com)");
+    
+        // Check if the cart item already exists
+        $existingCartItem = $this->Cart->get($cart["user_id"], $cart["product_id"], $cart["size_id"]);
+    
+        if ($existingCartItem) {
+            // If the item exists, update its quantity
+            $newQuantity = $existingCartItem["quantity"] + $cart["quantity"];
+            $updateData = [
+                "quantity" => $newQuantity
+            ];
+    
+            $result = $this->Cart->update($updateData, $cart["user_id"], $cart["product_id"], $cart["size_id"]);
+    
+            if (!$result) {
+                return Response::payload(500, false, "Contact administrator (belenkentharold@gmail.com)");
+            }
+    
+            return Response::payload(
+                200,
+                true,
+                "cart item updated successfully",
+                array("cart" => $this->Cart->get($cart["user_id"], $cart["product_id"], $cart["size_id"]))
+            );
+        } else {
+            // If the item does not exist, create a new entry
+            $result = $this->Cart->create($cart);
+    
+            if (!$result) {
+                return Response::payload(500, false, "Contact administrator (belenkentharold@gmail.com)");
+            }
+    
+            return Response::payload(
+                201,
+                true,
+                "cart item created successfully",
+                array("cart" => $this->Cart->get($cart["user_id"], $cart["product_id"], $cart["size_id"]))
+            );
         }
-
-        return Response::payload(
-            201,
-            true,
-            "cart item created successfully",
-            array("cart" => $this->Cart->get($cart["user_id"], $cart["product_id"], $cart["size_id"]))
-        );
     }
+    
 
     function get($user_id, $product_id, $size_id)
     {

@@ -13,31 +13,45 @@ class Cart
     }
 
     public function get($user_id, $product_id, $size_id)
-    {
-        $queryStr = "SELECT cart.*, product.product_name, product.product_description, product.product_price, product.product_image 
-                     FROM cart 
-                     JOIN product ON cart.product_id = product.product_id
-                     WHERE cart.user_id = :user_id AND cart.product_id = :product_id AND cart.size_id = :size_id";
-        $stmt = $this->pdo->prepare($queryStr);
+{
+    error_log("get() called with user_id: $user_id, product_id: $product_id, size_id: $size_id");
 
-        try {
-            $stmt->execute([
-                "user_id" => $user_id,
-                "product_id" => $product_id,
-                "size_id" => $size_id
-            ]);
-            return $stmt->fetch();
-        } catch (PDOException $e) {
-            error_log($e->getMessage());
-            return null;
+    $queryStr = "SELECT cart.*, product.product_name, product.product_description, product.product_price, product.product_image, productsize.size_label
+                 FROM cart 
+                 JOIN product ON cart.product_id = product.product_id
+                 JOIN productsize ON cart.size_id = productsize.size_id
+                 WHERE cart.user_id = :user_id AND cart.product_id = :product_id AND cart.size_id = :size_id";
+    $stmt = $this->pdo->prepare($queryStr);
+
+    try {
+        $stmt->execute([
+            "user_id" => $user_id,
+            "product_id" => $product_id,
+            "size_id" => $size_id
+        ]);
+
+        $result = $stmt->fetch();
+        
+        if (!$result) {
+            error_log("No results found for user_id: $user_id, product_id: $product_id, size_id: $size_id");
+        } else {
+            error_log("Result found: " . print_r($result, true));
         }
-    }
 
+        return $result;
+    } catch (PDOException $e) {
+        error_log("SQL Error: " . $e->getMessage());
+        return null;
+    }
+}
+
+    
     public function getAll()
     {
-        $queryStr = "SELECT cart.*, product.product_name, product.product_description, product.product_price, product.product_image 
+        $queryStr = "SELECT cart.*, product.product_name, product.product_description, product.product_price, product.product_image, productsize.size_label
                      FROM cart 
-                     JOIN product ON cart.product_id = product.product_id";
+                     JOIN product ON cart.product_id = product.product_id
+                     JOIN productsize ON cart.size_id = productsize.size_id";
         $stmt = $this->pdo->prepare($queryStr);
 
         try {
